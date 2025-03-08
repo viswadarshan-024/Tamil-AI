@@ -78,16 +78,14 @@ def get_wikipedia_content(query):
 # Function to fetch Google Search content using Google Custom Search API
 def get_google_content(query):
     try:
-        google_api_key = st.secrets.get("GOOGLE_API_KEY", "")
-        google_cx = st.secrets.get("GOOGLE_CX", "")
-        if not google_api_key or not google_cx:
+        if not st.session_state.google_api_key or not st.session_state.google_cx:
             st.warning("கூகுள் தேடல் API விசைகள் அமைக்கப்படவில்லை.")
             return None
         url = "https://www.googleapis.com/customsearch/v1"
         params = {
             "q": query,
-            "key": google_api_key,
-            "cx": google_cx,
+            "key": st.session_state.google_api_key,
+            "cx": st.session_state.google_cx,
             "lr": "lang_ta"  # தமிழ் மொழி முதல்
         }
         response = requests.get(url, params=params)
@@ -149,7 +147,7 @@ def generate_response(query):
                 "temperature": 0.1,
                 "top_p": 0.95,
                 "top_k": 40,
-                "max_output_tokens": 2600,
+                "max_output_tokens": 5600,
             },
             safety_settings=safety_settings
         )
@@ -179,17 +177,47 @@ def generate_response(query):
 st.title("📚 தமிழ் தகவல் உதவியாளர்")
 st.markdown("தமிழ் வரலாறு, இலக்கியம், பண்பாடு பற்றிய உங்கள் கேள்விகளுக்கு துல்லியமான பதில்களைப் பெறுங்கள்")
 
-# Sidebar for API key and application info
+# Sidebar for API keys and application info
 with st.sidebar:
     st.header("⚙️ அமைப்புகள்")
+    
+    # Initialize session state variables if they don't exist
     if 'api_key' not in st.session_state:
         st.session_state.api_key = ""
+    if 'google_api_key' not in st.session_state:
+        st.session_state.google_api_key = ""
+    if 'google_cx' not in st.session_state:
+        st.session_state.google_cx = ""
+    
+    # Gemini API key input
     api_key = st.text_input("Gemini API Key", value=st.session_state.api_key, type="password")
     if api_key:
         st.session_state.api_key = api_key
-        st.success("API key சேமிக்கப்பட்டது!")
+        
+    # Google API key input
+    google_api_key = st.text_input("Google API Key", value=st.session_state.google_api_key, type="password")
+    if google_api_key:
+        st.session_state.google_api_key = google_api_key
+        
+    # Google CX input
+    google_cx = st.text_input("Google CX (Custom Search Engine ID)", value=st.session_state.google_cx, type="password")
+    if google_cx:
+        st.session_state.google_cx = google_cx
+    
+    # Check if all required keys are provided
+    if api_key and google_api_key and google_cx:
+        st.success("அனைத்து API விசைகளும் சேமிக்கப்பட்டன!")
     else:
-        st.warning("இந்த செயலியை பயன்படுத்த API key தேவை.")
+        required_keys = []
+        if not api_key:
+            required_keys.append("Gemini API Key")
+        if not google_api_key:
+            required_keys.append("Google API Key")
+        if not google_cx:
+            required_keys.append("Google CX")
+        
+        if required_keys:
+            st.warning(f"இந்த செயலியை முழுமையாக பயன்படுத்த பின்வரும் விசைகள் தேவை: {', '.join(required_keys)}")
     
     st.markdown("---")
     st.markdown("""
@@ -218,7 +246,7 @@ for message in st.session_state.messages:
 # User input
 if query := st.chat_input("உங்கள் கேள்வியை தமிழில் கேளுங்கள்..."):
     if 'api_key' not in st.session_state or not st.session_state.api_key:
-        st.error("API key தேவை. தயவுசெய்து sidebar-இல் சேர்க்கவும்.")
+        st.error("Gemini API key தேவை. தயவுசெய்து sidebar-இல் சேர்க்கவும்.")
     else:
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": query})
