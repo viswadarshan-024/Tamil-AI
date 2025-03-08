@@ -2,6 +2,8 @@
 
 A Streamlit application that uses Wikipedia and Google Search to provide accurate and reliable information in Tamil language, powered by Gemini AI.
 
+Try it out: [Tamil AI](https://tamil-ai.streamlit.app/)
+
 ## Overview
 
 தமிழ் தகவல் உதவியாளர் (Tamil Information Assistant) is designed to provide comprehensive and accurate information about Tamil literature, history, culture, and more in the Tamil language. It leverages multiple sources to ensure reliable information:
